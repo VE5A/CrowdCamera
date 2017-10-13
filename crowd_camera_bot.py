@@ -5,23 +5,28 @@ from crowd_checker import CrowdChecker
 from strings import bus_timetable_message, bus_stops_message, medical_message
 from utils import subscribe_chat_id, unsubscribe_chat_id
 from utils import get_bus_markup, get_default_markup
-from telegram.ext import Updater
 
-token = 'TOKEN'
-bot = telebot.TeleBot(token)
-
+TOKEN = "TOKEN"
+CROWD_THRESHOLD = 10
+bot = telebot.TeleBot(TOKEN)
 crowdChecker = CrowdChecker()
 crowdChecker.start()
-
-u = Updater(token)
-job = u.job_queue
 
 current_context = {'subscribed_chats': set()}
 
 def callback_minute():
     for chat_id in current_context['subscribed_chats']:
-        bot.send_message(chat_id=chat_id, text='MESSAGE')
-    threading.Timer(5, callback_minute).start()
+        amount = crowdChecker.howManyPeopleNow()
+        if amount > CROWD_THRESHOLD:
+            bot.send_message(chat_id=chat_id,
+            text='ВНИМАНИЕ: на остановке много людей. \
+В данный момент количество: *{}*\n\
+Советуем дождаться следующего автобуса\n\
+_Вы были автоматически отписаны от уведомлений.\n\
+Для повторной подписки нажмите "Подписаться на уведомления"_'.format(amount),
+            parse_mode='MARKDOWN')
+            unsubscribe_chat_id(chat_id)
+    threading.Timer(60, callback_minute).start()
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
@@ -29,7 +34,7 @@ def callback_inline(call):
         current_chat_id = call.message.chat.id
 
         if call.data == "people_count":
-            send_text = crowdChecker.howManyPeopleNow()
+            send_text = "Людей на остановке сейчас: *{}*".format(crowdChecker.howManyPeopleNow())
 
         if call.data == "subscribe":
             send_text = "Вы успешно подписались на уведомления!"
@@ -56,7 +61,7 @@ def callback_inline(call):
                          'no_space']:
             s = requests.Session()
             s.get('https://api.telegram.org/bot{0}/deletemessage?message_id={1}&chat_id={2}'.format( \
-            token, call.message.message_id, current_chat_id))
+            TOKEN, call.message.message_id, current_chat_id))
             bot.send_message(chat_id=current_chat_id,
                 text=send_text, parse_mode='MARKDOWN',
                 reply_markup=get_bus_markup(current_context, current_chat_id))
