@@ -1,15 +1,18 @@
 import telebot
 import requests
 import threading
-from server_checker import ServerChecker
+from crowd_checker import CrowdChecker
 from strings import bus_timetable_message, bus_stops_message, medical_message
 from utils import subscribe_chat_id, unsubscribe_chat_id
 from utils import get_bus_markup, get_default_markup
 from telegram.ext import Updater
 
-token = "TOKEN"
+token = 'TOKEN'
 bot = telebot.TeleBot(token)
-serverChecker = ServerChecker()
+
+crowdChecker = CrowdChecker()
+crowdChecker.start()
+
 u = Updater(token)
 job = u.job_queue
 
@@ -26,7 +29,7 @@ def callback_inline(call):
         current_chat_id = call.message.chat.id
 
         if call.data == "people_count":
-            send_text = serverChecker.execCommandOnServer("get_people_count")
+            send_text = crowdChecker.howManyPeopleNow()
 
         if call.data == "subscribe":
             send_text = "Вы успешно подписались на уведомления!"
@@ -91,3 +94,5 @@ def handle_all(message):
 
 callback_minute()
 bot.polling(none_stop=False, interval=0, timeout=40)
+
+crowdChecker.join()
