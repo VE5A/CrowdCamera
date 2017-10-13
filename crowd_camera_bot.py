@@ -21,9 +21,7 @@ def callback_minute():
             bot.send_message(chat_id=chat_id,
             text='ВНИМАНИЕ: на остановке много людей. \
 В данный момент количество: *{}*\n\
-Советуем дождаться следующего автобуса\n\
-_Вы были автоматически отписаны от уведомлений.\n\
-Для повторной подписки нажмите "Подписаться на уведомления"_'.format(amount),
+Советуем дождаться следующего автобуса.'.format(amount),
             parse_mode='MARKDOWN')
             unsubscribe_chat_id(chat_id)
     threading.Timer(60, callback_minute).start()
