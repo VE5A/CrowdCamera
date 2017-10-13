@@ -25,30 +25,32 @@ def callback_inline(call):
     if call.message:
         current_chat_id = call.message.chat.id
 
-        if call.data == "1":
+        if call.data == "people_count":
             send_text = serverChecker.execCommandOnServer("get_people_count")
 
-        if call.data == "1.sub":
+        if call.data == "subscribe":
             send_text = "Вы успешно подписались на уведомления!"
             subscribe_chat_id(current_context, current_chat_id)
 
-        if call.data == "1.unsub":
+        if call.data == "unsubscribe":
             send_text = "Вы успешно отписались от уведомлений!"
             unsubscribe_chat_id(current_context, current_chat_id)
 
-        if call.data == '2':
+        if call.data == 'timetable':
             send_text = bus_timetable_message()
 
-        if call.data == '3':
+        if call.data == 'bus_stops':
             send_text = bus_stops_message()
 
-        if call.data == '4':
+        if call.data == 'where_is_bus':
             send_text = '_Скоро будет реализовано._'
 
-        if call.data == '5':
+        if call.data == 'no_space':
             send_text = '_Ваш отзыв принят._'
 
-        if call.data in ['1', '1.sub', '1.unsub', '2', '3', '4', '5']:
+        if call.data in ['people_count', 'subscribe', 'unsubscribe',
+                         'timetable', 'bus_stops', 'where_is_bus',
+                         'no_space']:
             s = requests.Session()
             s.get('https://api.telegram.org/bot{0}/deletemessage?message_id={1}&chat_id={2}'.format( \
             token, call.message.message_id, current_chat_id))
